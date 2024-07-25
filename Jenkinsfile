@@ -64,8 +64,8 @@ pipeline {
                         sh """
                         ls 
                         ip r
-                        ssh -o StrictHostKeyChecking=no ubuntu@172-31-16-58 'docker pull ${imageTag}'
-                        ssh -o StrictHostKeyChecking=no ubuntu@172-31-16-58 'docker run -d -p 80:80 ${imageTag}'
+                        ssh -o StrictHostKeyChecking=no ubuntu@172.31.16.58 'docker pull ${imageTag}'
+                        ssh -o StrictHostKeyChecking=no ubuntu@172.31.16.58 'docker run -d -p 80:80 ${imageTag}'
                         """
                     }
                 }
