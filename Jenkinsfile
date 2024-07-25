@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_HUB_CREDENTIALS = credentials('dockerpass')
+        DOCKER_HUB_CREDENTIALS = credentials('dockerpass') // Docker Hub credentials
         DOCKER_IMAGE = 'neeraj0307/node'
     }
 
@@ -10,28 +10,38 @@ pipeline {
         stage('Checkout') {
             steps {
                 script {
-                    git(
-                        url: 'git@github.com:psaineeraj0301/Node_application.git',
-                        credentialsId: 'Github_ssh_key'
-                    )
+                    // Checkout the Git repository
+                    git branch: 'main', credentialsId: 'Github_ssh_key', url: 'git@github.com:psaineeraj0301/Node_application.git'
                 }
             }
         }
-        stage('Build') {
+        stage('Build Docker Image') {
             steps {
-                sh 'docker build -t neeraj0307/node .'
+                script {
+                    // Build Docker image
+                    def imageTag = "${DOCKER_IMAGE}:${env.BUILD_NUMBER}"
+                    echo "Building Docker image with tag ${imageTag}"
+                    docker.build(imageTag, '.')
+                }
             }
         }
         stage('Test') {
             steps {
-                sh 'npm test'
+                script {
+                    // Run tests inside the Docker container
+                    echo "Running tests"
+                    sh 'npm test'
+                }
             }
         }
-        stage('Push') {
+        stage('Push Docker Image') {
             steps {
                 script {
-                    docker.withRegistry('https://hub.docker.com/repository/docker/neeraj0307/node/general', 'dockerpass') {
-                        sh 'docker push neeraj0307/node'
+                    // Push Docker image to Docker Hub
+                    def imageTag = "${DOCKER_IMAGE}:${env.BUILD_NUMBER}"
+                    echo "Pushing Docker image with tag ${imageTag}"
+                    docker.withRegistry('https://index.docker.io/v1/', 'dockerpass') {
+                        docker.image(imageTag).push()
                     }
                 }
             }
@@ -39,10 +49,13 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
+                    // Deploy Docker container to EC2 instance
                     sshagent(['Github_ssh_key']) {
+                        def imageTag = "${DOCKER_IMAGE}:${env.BUILD_NUMBER}"
+                        echo "Deploying Docker container with image ${imageTag}"
                         sh """
-                        ssh -o StrictHostKeyChecking=no ubuntu@34.222.58.76 'docker pull neeraj0307/node'
-                        ssh -o StrictHostKeyChecking=no ubuntu@34.222.58.76 'docker run -d -p 80:80 neeraj0307/node'
+                        ssh -o StrictHostKeyChecking=no ubuntu@34.222.58.76 'docker pull ${imageTag}'
+                        ssh -o StrictHostKeyChecking=no ubuntu@34.222.58.76 'docker run -d -p 80:80 ${imageTag}'
                         """
                     }
                 }
