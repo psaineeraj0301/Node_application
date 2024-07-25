@@ -62,6 +62,8 @@ pipeline {
                         def imageTag = "${DOCKER_IMAGE}:${env.BUILD_NUMBER}"
                         echo "Deploying Docker container with image ${imageTag}"
                         sh """
+                        ls 
+                        ip r
                         ssh -o StrictHostKeyChecking=no ubuntu@34.222.58.76 'docker pull ${imageTag}'
                         ssh -o StrictHostKeyChecking=no ubuntu@34.222.58.76 'docker run -d -p 80:80 ${imageTag}'
                         """
