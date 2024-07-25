@@ -13,6 +13,7 @@ pipeline {
                     // Checkout the Git repository
                     git branch: 'main', credentialsId: 'Github_ssh_key', url: 'git@github.com:psaineeraj0301/Node_application.git'
                 }
+                sh 'ls -la'
             }
         }
         stage('Build Docker Image') {
