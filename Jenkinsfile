@@ -15,14 +15,6 @@ pipeline {
                 }
             }
         }
-        stage('Verify Workspace') {
-            steps {
-                script {
-                    // List files in workspace to verify checkout
-                    sh 'ls -la'
-                }
-            }
-        }
         stage('Build Docker Image') {
             steps {
                 script {
@@ -36,7 +28,7 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    // Run tests
+                    // Run tests inside the Docker container
                     echo "Running tests"
                     sh 'npm test'
                 }
